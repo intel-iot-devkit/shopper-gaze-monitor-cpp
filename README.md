@@ -1,5 +1,7 @@
 # Shopper Gaze Monitor
 
+![app image](./images/shopper-gaze-monitor-image.png)
+
 ## Introduction
 
 This shopper gaze monitor application is part of a series of how-to Computer Vision (CV) code sample exercises using Intel® OpenVINO.
@@ -90,3 +92,18 @@ If you wish to use a MQTT server to publish data, you should set the following e
 You should change the `MQTT_CLIENT_ID` to a unique value for each monitoring station, so you can track the data for individual locations. For example:
 
     export MQTT_CLIENT_ID=shelf1337
+
+## Sample videos
+
+There are several videos available to use as sample videos to show the capabilities of this application. You can download then by running these commands:
+
+    mkdir resources
+    cd resources
+    wget https://github.com/intel-iot-devkit/sample-videos/raw/master/face-demographics-walking-and-pause.mp4
+    wget https://github.com/intel-iot-devkit/sample-videos/raw/master/face-demographics-walking.mp4
+    cd ..
+    
+To run the code using one of these sample video:
+
+    cd build
+    ./monitor -m=/opt/intel/computer_vision_sdk/deployment_tools/intel_models/face-detection-adas-0001/FP32/face-detection-adas-0001.bin -c=/opt/intel/computer_vision_sdk/deployment_tools/intel_models/face-detection-adas-0001/FP32/face-detection-adas-0001.xml -pm=/opt/intel/computer_vision_sdk/deployment_tools/intel_models/head-pose-estimation-adas-0001/FP32/head-pose-estimation-adas-0001.bin -pc=/opt/intel/computer_vision_sdk/deployment_tools/intel_models/head-pose-estimation-adas-0001/FP32/head-pose-estimation-adas-0001.xml -i=../resources/face-demographics-walking-and-pause.mp4
