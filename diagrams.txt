@@ -18,17 +18,22 @@ C -->Darknet
 C-->V(OpenVINO IR)
 
 graph TD
+subgraph cloud
+S[MQTT Server]
+end
+subgraph local
 subgraph Frame thread
 Q[Take next available frame from queue]-->F[Look for faces using DNN]
 F-->P[Check poses using DNN]
 P-->U[Update stats]
 end
-subgraph Messaging thread
-M[Send MQTT messages to server with stats]
-end
 subgraph Main thread
 C[Capture frames]-->MQ[Add to queue]
 MQ-->W[Window with display including stats]
+end
+subgraph Messaging thread
+M[Send MQTT messages to server with stats]-- optional -->S
+end
 end
 
 graph LR
