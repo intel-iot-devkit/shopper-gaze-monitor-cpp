@@ -59,7 +59,7 @@ The program creates three threads for concurrency:
 
 ## Setting the build environment
 
-You must configure the environment to use the OpenVINO™ toolkit one time per session by the running the following command:
+You must configure the environment to use the OpenVINO™ toolkit one time per session by running the following command:
 
     source /opt/intel/computer_vision_sdk/bin/setupvars.sh
 
