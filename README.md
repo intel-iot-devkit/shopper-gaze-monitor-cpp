@@ -10,7 +10,7 @@
 
 ## Introduction
 
-This shopper gaze monitor application is one of a series of reference implementations for Computer Vision (CV) using the Intel® OpenVINO™ toolkit. This application is designed for a retail shelf mounted camera system that counts the the number of passers-by that look toward the display vs. the number of people that pass by the display without looking. It is intended to provide real-world marketing statistics for in-store shelf-space advertising.
+This shopper gaze monitor application is one of a series of reference implementations for Computer Vision (CV) using the OpenVINO™ toolkit. This application is designed for a retail shelf mounted camera system that counts the the number of passers-by that look toward the display vs. the number of people that pass by the display without looking. It is intended to provide real-world marketing statistics for in-store shelf-space advertising.
 
 ## Requirements
 
