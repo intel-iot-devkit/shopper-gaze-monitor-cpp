@@ -1,14 +1,38 @@
 # Shopper Gaze Monitor
 
+| Details            |              |
+|-----------------------|---------------|
+| Target OS:            |  Ubuntu\* 16.04 LTS   |
+| Programming Language: |  C++\* |
+| Time to Complete:    |  45 min     |
+
 ![app image](./images/shopper-gaze-monitor-image.png)
 
 ## Introduction
 
-This shopper gaze monitor application is part of a series of how-to Computer Vision (CV) code sample exercises using OpenVINO™ toolkit.
+This shopper gaze monitor application is one of a series of reference implementations for Computer Vision (CV) using the Intel® OpenVINO™ toolkit. This application is designed for a retail shelf mounted camera system that counts the the number of passers-by that look toward the display vs. the number of people that pass by the display without looking. It is intended to provide real-world marketing statistics for in-store shelf-space advertising.
 
-## What it is
+## Requirements
 
-This application is designed for a retail shelf mounted camera system that counts the the number of passers-by that look toward the display vs. the number of people that pass by the display without looking. It is intended to provide real-world marketing statistics for in-store shelf-space advertising.
+### Hardware
+* 6th Generation Intel® Core™ processor with Intel® Iris® Pro graphics and Intel® HD Graphics
+
+### Software
+* [Ubuntu\* 16.04 LTS](http://releases.ubuntu.com/16.04/)
+*Note*: You must be running kernel version 4.7+ to use this software. We recommend using a 4.14+ kernel to use this software. Run the following command to determine your kernel version:
+```
+uname -a
+```
+* OpenCL™ Runtime Package
+* OpenVINO™ toolkit
+
+## Setup
+
+### Install OpenVINO™ Toolkit
+Refer to https://software.intel.com/en-us/articles/OpenVINO-Install-Linux for more information about how to install and setup the OpenVINO™ toolkit.
+
+You will need the OpenCL™ Runtime package if you plan to run inference on the GPU as shown by the
+instructions below. It is not mandatory for CPU inference.
 
 ## How it works
 
@@ -89,13 +113,15 @@ If you wish to use a MQTT server to publish data, you should set the following e
     export MQTT_SERVER=localhost:1883
     export MQTT_CLIENT_ID=cvservice
 
+Change the `MQTT_SERVER` to a value that matches the MQTT server you are connecting to.
+
 You should change the `MQTT_CLIENT_ID` to a unique value for each monitoring station, so you can track the data for individual locations. For example:
 
     export MQTT_CLIENT_ID=shelf1337
 
 ## Sample videos
 
-There are several videos available to use as sample videos to show the capabilities of this application. You can download then by running these commands:
+There are several videos available to use as sample videos to show the capabilities of this application. You can download then by running these commands from the `shopper-gaze-monitor` directory:
 
     mkdir resources
     cd resources
@@ -103,7 +129,7 @@ There are several videos available to use as sample videos to show the capabilit
     wget https://github.com/intel-iot-devkit/sample-videos/raw/master/face-demographics-walking.mp4
     cd ..
     
-To run the code using one of these sample videos:
+To then execute the code using one of these sample videos, run the following commands from the `shopper-gaze-monitor` directory:
 
     cd build
     ./monitor -m=/opt/intel/computer_vision_sdk/deployment_tools/intel_models/face-detection-adas-0001/FP32/face-detection-adas-0001.bin -c=/opt/intel/computer_vision_sdk/deployment_tools/intel_models/face-detection-adas-0001/FP32/face-detection-adas-0001.xml -pm=/opt/intel/computer_vision_sdk/deployment_tools/intel_models/head-pose-estimation-adas-0001/FP32/head-pose-estimation-adas-0001.bin -pc=/opt/intel/computer_vision_sdk/deployment_tools/intel_models/head-pose-estimation-adas-0001/FP32/head-pose-estimation-adas-0001.xml -i=../resources/face-demographics-walking-and-pause.mp4
