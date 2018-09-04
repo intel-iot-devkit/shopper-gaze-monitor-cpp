@@ -1,5 +1,11 @@
 # Shopper Gaze Monitor
 
+| Details            |              |
+|-----------------------|---------------|
+| Target OS:            |  Ubuntu\* 16.04 LTS   |
+| Programming Language: |  C++\* |
+| Time to Complete:    |  45 min     |
+
 ![app image](./images/shopper-gaze-monitor-image.png)
 
 ## Introduction
