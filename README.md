@@ -65,9 +65,9 @@ You must configure the environment to use the OpenVINO™ toolkit one time per s
 
 ## Building the code
 
-First change directory to the `shopper-gaze-monitor` directory:
+Start by changing the current directory to wherever you have git cloned the application code. For example:
 
-    cd shopper-gaze-monitor
+    cd shopper-gaze-monitor-cpp
 
 If you do not yet have a `build` directory create one:
 
