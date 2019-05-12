@@ -21,13 +21,15 @@
 * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-// std includes
+// Std includes
 #include <iostream>
 #include <stdio.h>
 #include <thread>
 #include <queue>
 #include <mutex>
 #include <syslog.h>
+#include <atomic>
+#include <csignal>
 
 // OpenCV includes
 #include <opencv2/core.hpp>
@@ -43,6 +45,12 @@ using namespace std;
 using namespace cv;
 using namespace dnn;
 
+// Flag to control background threads
+atomic<bool> keepRunning(true);
+
+// Flag to handle UNIX signals
+static volatile sig_atomic_t sig_caught = 0;
+
 // OpenCV-related variables
 Mat frame, blob, poseBlob;
 VideoCapture cap;
@@ -50,7 +58,7 @@ int delay = 5;
 Net net, posenet;
 bool poseChecked = false;
 
-// application parameters
+// Application parameters
 String model;
 String config;
 String posemodel;
@@ -68,7 +76,6 @@ struct ShoppingInfo
 
 // currentInfo contains the latest ShoppingInfo tracked by the application.
 ShoppingInfo currentInfo;
-
 
 std::queue<Mat> nextImage;
 String currentPerf;
@@ -92,7 +99,8 @@ const char* keys =
                         "0: CPU target (by default), "
                         "1: OpenCL, "
                         "2: OpenCL fp16 (half-float precision), "
-                        "3: VPU }"
+                        "3: VPU,"
+			"5: HETERO:FPGA,CPU }"
     "{ rate r      | 1 | number of seconds between data updates to MQTT server. }";                        
 
 
@@ -126,8 +134,8 @@ ShoppingInfo getCurrentInfo() {
     return rtn;
 }
 
-// updateInfo uppdates the current ShoppingInfo for the application to the highest values
-// during the current time period.
+/* updateInfo updates the current ShoppingInfo for the application to the highest values
+   during the current time period.*/
 void updateInfo(ShoppingInfo info) {
     m2.lock();
     if (currentInfo.shoppers < info.shoppers) {
@@ -174,7 +182,7 @@ void savePerformanceInfo() {
     m1.unlock();
 }
 
-// publish MQTT message with a JSON payload
+// Publish MQTT message with a JSON payload
 void publishMQTTMessage(const string& topic, const ShoppingInfo& info)
 {
     std::ostringstream s;
@@ -189,7 +197,7 @@ void publishMQTTMessage(const string& topic, const ShoppingInfo& info)
     syslog(LOG_INFO, "%s", payload.c_str());
 }
 
-// message handler for the MQTT subscription for the any desired control channel topic
+// Message handler for the MQTT subscription for the any desired control channel topic
 int handleMQTTControlMessages(void *context, char *topicName, int topicLen, MQTTClient_message *message)
 {
     string topic = topicName;
@@ -201,15 +209,15 @@ int handleMQTTControlMessages(void *context, char *topicName, int topicLen, MQTT
 
 // Function called by worker thread to process the next available video frame.
 void frameRunner() {
-    for (;;) {
+    while (keepRunning.load()) {
         Mat next = nextImageAvailable();
         if (!next.empty()) {
-            // convert to 4d vector as required by model, and set as input
+            // Convert to 4d vector as required by model, and set as input
             blobFromImage(next, blob, 1.0, Size(672, 384));
             net.setInput(blob);
             Mat prob = net.forward();
 
-            // get faces
+            // Get faces
             std::vector<float> confidences;
             std::vector<Rect> faces;
             int looking = 0;
@@ -231,9 +239,9 @@ void frameRunner() {
                 }
             }            
 
-            // look for poses
+            // Look for poses
             for(auto const& r: faces) {
-                // make sure the face rect is completely inside the main Mat
+                // Make sure the face rect is completely inside the main Mat
                 if ((r & Rect(0, 0, next.cols, next.rows)) != r) {
                     continue;
                 }
@@ -242,20 +250,20 @@ void frameRunner() {
                 std::vector<String> names{"angle_y_fc", "angle_p_fc", "angle_r_fc"};
                 cv::Mat face = next(r);
                 
-                // convert to 4d vector, and process thru neural network
+                // Convert to 4d vector, and process thru neural network
                 blobFromImage(face, poseBlob, 1.0, Size(60, 60));
                 posenet.setInput(poseBlob);
                 posenet.forward(outs, names);
                 poseChecked = true;
 
-                // the shopper is looking if their head is tilted within a 45 degree angle relative to the shelf
+                // The shopper is looking if their head is tilted within a 45 degree angle relative to the shelf
                 if ( (outs[0].at<float>(0) > -22.5) && (outs[0].at<float>(0) < 22.5) &&
                      (outs[1].at<float>(0) > -22.5) && (outs[1].at<float>(0) < 22.5) ) {
                     looking++;
                 }
             }
 
-            // retail data
+            // Retail data
             ShoppingInfo info;
             info.shoppers = faces.size();
             info.lookers = looking;
@@ -264,20 +272,22 @@ void frameRunner() {
             savePerformanceInfo();
         }
     }
+    cout << "Video processing thread stopped" << endl;
 }
 
 // Function called by worker thread to handle MQTT updates. Pauses for rate second(s) between updates.
 void messageRunner() {
-    for (;;) {
+    while (keepRunning.load()) {
         publishMQTTMessage("retail/traffic", getCurrentInfo());
         resetInfo();
         std::this_thread::sleep_for(std::chrono::seconds(rate));
     }
+    cout << "MQTT sender thread stopped" << endl;
 }
 
 int main(int argc, char** argv)
 {
-    // parse command parameters
+    // Parse command parameters
     CommandLineParser parser(argc, argv, keys);
     parser.about("Use this script to using OpenVINO.");
     if (argc == 1 || parser.has("help"))
@@ -295,7 +305,7 @@ int main(int argc, char** argv)
     posemodel = parser.get<String>("posemodel");
     poseconfig = parser.get<String>("poseconfig");
 
-    // connect MQTT messaging
+    // Connect MQTT messaging
     int result = mqtt_start(handleMQTTControlMessages);
     if (result == 0) {
         syslog(LOG_INFO, "MQTT started.");
@@ -305,21 +315,21 @@ int main(int argc, char** argv)
 
     mqtt_connect();
 
-    // open face model
+    // Open face model
     net = readNet(model, config);
     net.setPreferableBackend(backendId);
     net.setPreferableTarget(targetId);
 
-    // open pose model
+    // Open pose model
     posenet = readNet(posemodel, poseconfig);
     posenet.setPreferableBackend(backendId);
     posenet.setPreferableTarget(targetId);
 
-    // open video capture source
+    // Open video capture source
     if (parser.has("input")) {
         cap.open(parser.get<String>("input"));
 
-        // also adjust delay so video playback matches the number of FPS in the file
+        // Also adjust delay so video playback matches the number of FPS in the file
         double fps = cap.get(CAP_PROP_FPS);
         delay = 1000/fps;
     }
@@ -332,16 +342,17 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    // start worker threads
+    // Start worker threads
     std::thread t1(frameRunner);
     std::thread t2(messageRunner);
 
-    // read video input data
+    // Read video input data
     for (;;) {
         cap.read(frame);
 
         if (frame.empty()) {
             cerr << "ERROR! blank frame grabbed\n";
+            keepRunning = false;
             break;
         }
 
@@ -356,16 +367,19 @@ int main(int argc, char** argv)
         
         imshow("Shopper Gaze Monitor", frame);
 
+        // TODO: signal threads to exit
         if (waitKey(delay) >= 0) {
-            // TODO: signal threads to exit
+            cout << "Attempting to stop background threads" << endl;
+            keepRunning = false;
             break;
         }
     }
 
     // TODO: wait for worker threads to exit
-    //t1.join();
+    t1.join();
+    t2.join();
 
-    // disconnect MQTT messaging
+    // Disconnect MQTT messaging
     mqtt_disconnect();
     mqtt_close();
 
