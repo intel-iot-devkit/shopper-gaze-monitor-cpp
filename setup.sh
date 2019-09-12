@@ -1,4 +1,4 @@
-/*
+: '
 * Copyright (c) 2018 Intel Corporation.
 *
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -19,46 +19,22 @@
 * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+'
+sudo apt-get update
+sudo apt-get install mosquitto mosquitto-clients    # install mosquitto
+sudo apt-get install libssl-dev
 
-#ifndef MQTT_H_INCLUDED
-#define MQTT_H_INCLUDED
+if [ -d "json" ]
+then
+  sudo rm -r json
+fi
 
-#include <stdlib.h>
-#include <iostream>
-#include <sstream>
-#include <utility>
-#include <vector>
-#include <tuple>
-#include <cstring>
+git clone https://github.com/nlohmann/json       # Cloning json parser from github
 
-extern "C" {
-    #include "MQTTClient.h"
-    #include "MQTTClientPersistence.h"
-}
+cd resources
+wget -O face-demographics-walking-and-pause.mp4 https://github.com/intel-iot-devkit/sample-videos/raw/master/face-demographics-walking-and-pause.mp4    # Downloading the video required for the RI
 
-#define QOS 1
-#define TIMEOUT 1000L
+cd /opt/intel/openvino/deployment_tools/tools/model_downloader
+sudo ./downloader.py --name face-detection-adas-0001
+sudo ./downloader.py --name head-pose-estimation-adas-0001    # Downloading the pedestrian-detection model
 
-struct mqtt_service_config
-{
-    std::string server;
-    std::string client_id;
-    std::string topic;
-    std::string username;
-    std::string password;
-    std::string cert;
-    std::string cert_key;
-    std::string ca_root;
-};
-
-std::string std_getenv(const std::string &name);
-std::pair<mqtt_service_config, bool> get_mqtt_config();
-int mqtt_start(MQTTClient_messageArrived* msgrcv);
-void mqtt_close();
-void mqtt_connect();
-void mqtt_disconnect();
-int mqtt_publish(std::string const &topic, std::string const &message);
-void mqtt_subscribe(std::string const &topic);
-
-#endif

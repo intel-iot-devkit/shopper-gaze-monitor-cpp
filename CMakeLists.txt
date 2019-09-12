@@ -1,3 +1,4 @@
+
 # Copyright (c) 2018 Intel Corporation.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -45,23 +46,39 @@ include(osdetect)
 # Check for Intel OpenVINO
 message(STATUS "${Blue}Checking prerequisites...${CR}")
 
-find_package(DemoOpenVINO)
-if(NOT OpenCV_FOUND)
-    message(FATAL_ERROR "${Red}Intel OpenVINO was not found!\n${Blue}Have you sourced the ${Green}setupvars.sh${Blue} script provided by the Intel OpenVINO?${CR}")
-endif( )
+if (IE_NOT_FOUND_MESSAGE)
+    find_package(InferenceEngine 1.5 QUIET)
+    if (NOT(InferenceEngine_FOUND))
+        message(FATAL_ERROR ${IE_NOT_FOUND_MESSAGE})
+    endif()
+else()
+    find_package(InferenceEngine 1.5 REQUIRED)
+endif()
+
+find_package(OpenCV)
+if(OpenCV_FOUND)
+    message(STATUS "OPENCV is enabled")
+    message(STATUS "OpenCV_INCLUDE_DIRS=${OpenCV_INCLUDE_DIRS}")
+    message(STATUS "OpenCV_LIBS=${OpenCV_LIBS}")
+else()
+    message(STATUS "OPENCV is disabled or not found,  skiped")
+    return()
+endif()
 
 include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(application/include)
+include_directories(json/single_include)
 
 # Install paho MQTT dependency
 include(pahomqtt)
 
 # Application executables
 set(MONITOR monitor)
-set(DSOURCES src/main.cpp src/mqtt.cpp)
+set(DSOURCES application/src/main.cpp application/src/mqtt.cpp application/src/inference.cpp )
 add_executable(${MONITOR} ${DSOURCES})
-add_dependencies(${MONITOR} pahomqtt)
+add_dependencies(${MONITOR} IE::ie_cpu_extension pahomqtt)
 set_target_properties(${MONITOR} ${TRAINER} PROPERTIES COMPILE_FLAGS "-pthread -std=c++11")
-target_link_libraries (${MONITOR} ${OpenCV_LIBS} pthread paho-mqtt3cs)
+target_link_libraries (${MONITOR} ${OpenCV_LIBS} IE::ie_cpu_extension ${InferenceEngine_LIBRARIES} pthread paho-mqtt3cs)
 
 # Install
 install(TARGETS ${MONITOR} DESTINATION bin)

@@ -45,13 +45,11 @@ void mqtt_init(mqtt_service_config const &config)
 
     std::vector<char> server_c(
         config.server.c_str(),
-        config.server.c_str() + config.server.size() + 1
-    );
+        config.server.c_str() + config.server.size() + 1);
 
     std::vector<char> client_id_c(
         config.client_id.c_str(),
-        config.client_id.c_str() + config.client_id.size() + 1
-    );
+        config.client_id.c_str() + config.client_id.size() + 1);
 
     MQTTClient_create(&client,
                       &server_c[0],
@@ -67,9 +65,8 @@ void mqtt_init(mqtt_service_config const &config)
     {
         std::vector<char> username_c(
             config.username.c_str(),
-            config.username.c_str() + config.username.size() + 1
-        );
-        
+            config.username.c_str() + config.username.size() + 1);
+
         conn_opts.username = &username_c[0];
     }
 
@@ -77,9 +74,8 @@ void mqtt_init(mqtt_service_config const &config)
     {
         std::vector<char> password_c(
             config.password.c_str(),
-            config.password.c_str() + config.password.size() + 1
-        );
-        
+            config.password.c_str() + config.password.size() + 1);
+
         conn_opts.password = &password_c[0];
     }
 
@@ -88,19 +84,16 @@ void mqtt_init(mqtt_service_config const &config)
     {
         std::vector<char> cert_c(
             config.cert.c_str(),
-            config.cert.c_str() + config.cert.size() + 1
-        );
+            config.cert.c_str() + config.cert.size() + 1);
 
         std::vector<char> cert_key_c(
             config.cert_key.c_str(),
-            config.cert_key.c_str() + config.cert_key.size() + 1
-        );
+            config.cert_key.c_str() + config.cert_key.size() + 1);
 
         std::vector<char> ca_root_c(
             config.ca_root.c_str(),
-            config.ca_root.c_str() + config.ca_root.size() + 1
-        );
-        
+            config.ca_root.c_str() + config.ca_root.size() + 1);
+
         sslOptions.keyStore = &cert_c[0];
         sslOptions.privateKey = &cert_key_c[0];
         sslOptions.trustStore = &ca_root_c[0];
@@ -114,15 +107,15 @@ void mqtt_init(mqtt_service_config const &config)
     mqtt_initialized = true;
 };
 
-int mqtt_start(MQTTClient_messageArrived* msgrcv)
+int mqtt_start(MQTTClient_messageArrived *msgrcv)
 {
     auto mqtt_config_result = get_mqtt_config();
-    
+
     mqtt_service_config mqtt_config;
     bool mqtt_config_valid;
-    
+
     std::tie(mqtt_config, mqtt_config_valid) = mqtt_config_result;
-    
+
     if (!mqtt_config_valid)
     {
         return 1;
@@ -137,7 +130,6 @@ void mqtt_close()
 {
     if (mqtt_initialized)
     {
-        //std::cout << "Closing MQTT..." << std::endl;
         MQTTClient_destroy(&client);
     }
 };
@@ -149,7 +141,6 @@ void mqtt_connect()
         int rc;
         if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS)
         {
-            //std::cout << "Failed to connect to MQTT server, return code:" << rc << std::endl;
             return;
         }
     }
@@ -165,26 +156,26 @@ void mqtt_disconnect()
 
 int mqtt_publish(std::string const &topic, std::string const &message)
 {
-    if (!mqtt_initialized) {
+    if (!mqtt_initialized)
+    {
         return -1;
     }
 
     std::vector<char> topic_c(
         topic.c_str(),
-        topic.c_str() + topic.size() + 1
-    );
+        topic.c_str() + topic.size() + 1);
 
     std::vector<char> message_c(
         message.c_str(),
-        message.c_str() + message.size() + 1
-    );
+        message.c_str() + message.size() + 1);
 
     pubmsg.payload = &message_c[0];
     pubmsg.payloadlen = strlen(&message_c[0]);
     pubmsg.qos = QOS;
     pubmsg.retained = 0;
     int result = MQTTClient_publishMessage(client, &topic_c[0], &pubmsg, &token);
-    if (result != 0) { // MQTTCLIENT_SUCCESS = 0
+    if (result != 0)
+    {
         return result;
     }
     return MQTTClient_waitForCompletion(client, token, TIMEOUT);
@@ -192,7 +183,8 @@ int mqtt_publish(std::string const &topic, std::string const &message)
 
 void mqtt_subscribe(std::string const &topic)
 {
-    if (!mqtt_initialized) {
+    if (!mqtt_initialized)
+    {
         return;
     }
 
@@ -227,8 +219,7 @@ std::pair<mqtt_service_config, bool> get_mqtt_config()
 
     std::pair<mqtt_service_config, bool> result = {
         config,
-        config_valid
-    };
+        config_valid};
 
     return result;
 }
