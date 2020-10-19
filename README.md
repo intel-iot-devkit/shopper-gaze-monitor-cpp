@@ -1,8 +1,8 @@
-# Shopper Gaze Monitor
+﻿# Shopper Gaze Monitor
 
 | Details            |              |
 |-----------------------|---------------|
-| Target OS:            |  Ubuntu\* 16.04 LTS   |
+| Target OS:            |  Ubuntu\* 18.04 LTS   |
 | Programming Language: |  C++ |
 | Time to Complete:    |  45 min     |
 
@@ -18,13 +18,13 @@ This application is designed for a retail shelf mounted camera system that count
 * 6th to 8th Generation Intel® Core™ processors with Intel® Iris® Pro graphics or Intel® HD Graphics
 
 ### Software
-* [Ubuntu\* 16.04 LTS](http://releases.ubuntu.com/16.04/)<br><br>
+* [Ubuntu\* 18.04 LTS](http://releases.ubuntu.com/18.04/)<br><br>
 *Note*: We recommend using a 4.14+ kernel to use this software. Run the following command to determine your kernel version:
     ```
     uname -a
     ```
 * OpenCL™ Runtime Package
-* Intel® Distribution of OpenVINO™ toolkit 2019 R3 release
+* Intel® Distribution of OpenVINO™ toolkit 2020 R3 release
 
 ## How it works
 
@@ -47,7 +47,7 @@ The program creates two threads for concurrency:
 Clone the reference implementation
 ```
 sudo apt-get update && sudo apt-get install git
-git clone https://github.com/intel-iot-devkit/shopper-gaze-monitor-cpp.git
+git clone https://github.com/intel-iot-devkit/shopper-gaze-monitor-cpp.git 
 ```
 
 ### Install OpenVINO
@@ -64,7 +64,7 @@ Mosquitto is an open source message broker that implements the MQTT protocol. Th
 
 ## Which model to use
 
-This application uses the [face-detection-adas-0001](https://docs.openvinotoolkit.org/2019_R3/_models_intel_face_detection_adas_0001_description_face_detection_adas_0001.html) and [head-pose-estimation-adas-0001](https://docs.openvinotoolkit.org/2019_R3/_models_intel_human_pose_estimation_0001_description_human_pose_estimation_0001.html) Intel® model, that can be downloaded using the **model downloader**. The **model downloader** downloads the __.xml__ and __.bin__ files that is used by the application. 
+This application uses the [face-detection-adas-0001](https://docs.openvinotoolkit.org/latest/_models_intel_face_detection_adas_0001_description_face_detection_adas_0001.html) and [head-pose-estimation-adas-0001](https://docs.openvinotoolkit.org/2020.3/_models_intel_head_pose_estimation_adas_0001_description_head_pose_estimation_adas_0001.html) Intel® model, that can be downloaded using the **model downloader**. The **model downloader** downloads the __.xml__ and __.bin__ files that is used by the application. 
 
 To download the models and install the dependencies of the application, run the below command in the `shopper-gaze-monitor-cpp` directory:
 ```
@@ -192,7 +192,7 @@ To run on the Intel® Movidius™ VPU, use the ```-d=HDDL ``` command-line argum
 ./monitor -m=/opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/intel/face-detection-adas-0001/FP16/face-detection-adas-0001.xml -pm=/opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/intel/head-pose-estimation-adas-0001/FP16/head-pose-estimation-adas-0001.xml -d=HDDL
 ```
 **Note:** The Intel® Movidius™ VPU can only run FP16 models. The model that is passed to the application, through the `-m=<path_to_model>` command-line argument, must be of data type FP16.
-
+<!--
 #### Run on the Intel® Arria® 10 FPGA
 
 Before running the application on the FPGA, set the environment variables and  program the AOCX (bitstream) file.<br>
@@ -228,7 +228,7 @@ For more information on programming the bitstreams, please refer to [OpenVINO-In
 To run the application on the FPGA with floating point precision 16 (FP16), use the `-d HETERO:FPGA,CPU` command-line argument:
 
     ./monitor -m=/opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/intel/face-detection-adas-0001/FP16/face-detection-adas-0001.xml -pm=/opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/intel/head-pose-estimation-adas-0001/FP16/head-pose-estimation-adas-0001.xml -d=HETERO:FPGA,CPU 
-
+-->
 ### Machine to machine messaging with MQTT
     
 If you wish to use a MQTT server to publish data, you should set the following environment variables before running the program:

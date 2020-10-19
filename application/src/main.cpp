@@ -341,12 +341,13 @@ int main(int argc, char **argv)
         conf_modelLayers = parser.get<cv::String>("model");
         int pos = conf_modelLayers.rfind(".");
         conf_modelWeights = conf_modelLayers.substr(0, pos) + ".bin";
-
+        /*
         if (myTargetDevice.find("CPU") != std::string::npos)
         {
             net.plugin.AddExtension(std::make_shared<InferenceEngine::Extensions::Cpu::CpuExtensions>(), "CPU");
         }
-        if (net.loadNetwork(conf_modelLayers, conf_modelWeights, net.plugin, myTargetDevice) != 0)
+        */
+        if (net.loadNetwork(conf_modelLayers, conf_modelWeights, net.ie, myTargetDevice) != 0)
             return EXIT_FAILURE;
     }
     else
@@ -360,7 +361,7 @@ int main(int argc, char **argv)
         conf_modelLayers_pose = parser.get<cv::String>("posemodel");
         int pos = conf_modelLayers_pose.rfind(".");
         conf_modelWeights_pose = conf_modelLayers_pose.substr(0, pos) + ".bin";
-        if (net_pose.loadNetwork(conf_modelLayers_pose, conf_modelWeights_pose, net.plugin, myTargetDevice) != 0)
+        if (net_pose.loadNetwork(conf_modelLayers_pose, conf_modelWeights_pose, net.ie, myTargetDevice) != 0)
             return EXIT_FAILURE;
     }
     else
